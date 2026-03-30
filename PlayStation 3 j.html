@@ -1,0 +1,163 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>PlayStation 3J</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>🎮 PlayStation 3J</h1>
+<div id="status">Verificando firmware...</div>
+
+<!-- Adicionar Firmware -->
+<button onclick="document.getElementById('firmwareInput').click()">📂 Adicionar Firmware</button>
+<input type="file" id="firmwareInput" accept=".bin,.iso" style="display:none;" onchange="adicionarFirmware(event)">
+
+<!-- Adicionar ROM -->
+<button onclick="document.getElementById('romInput').click()">➕ Adicionar ROM (God of War 3)</button>
+<input type="file" id="romInput" accept=".iso,.bin" style="display:none;" onchange="adicionarROM(event)">
+
+<div id="gameList"></div>
+
+<div id="config">
+  <h3>Configurações do Jogo Selecionado</h3>
+  <label>Velocidade:
+    <select id="velocidade">
+      <option value="lento">Lento</option>
+      <option value="normal" selected>Normal</option>
+      <option value="suave">Suave</option>
+      <option value="ultra">Ultra</option>
+    </select>
+  </label>
+  <br>
+  <label>Resolução:
+    <select id="resolucao">
+      <option value="1x">1x</option>
+      <option value="2x" selected>2x</option>
+      <option value="3x">3x</option>
+      <option value="4x">4x</option>
+    </select>
+  </label>
+  <br>
+  <label>Shader:
+    <select id="shader">
+      <option value="on" selected>Ligado</option>
+      <option value="off">Desligado</option>
+    </select>
+  </label>
+  <br>
+  <button onclick="aplicarConfigSelecionado()">Aplicar Configurações</button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
+<button onclick="atualizarSistema()" style="background:red;">🔧 Atualizar (Dev)</button><style>body { margin:0; padding:0; font-family: Arial; background: #001f3f; color:#00ccff; text-align:center;}
+h1 { margin:20px; color:#00aaff; }
+#status { margin:10px; font-weight:bold; }
+#gameList { margin:20px auto; width:90%; max-width:600px; }
+.game { margin:10px; padding:15px; border-radius:12px; background:#003366; color:white; box-shadow:0 0 10px #00ccff;}
+button { padding:8px 12px; margin:5px; border:none; border-radius:6px; cursor:pointer; background:#00aaff; color:white; }
+button:hover { background:#00ffcc; color:black; }
+input[type=file]{display:none;}
+img.logo { width:80px; display:block; margin:5px auto; }
+select { margin:5px; padding:4px; border-radius:4px; }
+.controls { margin-top:5px; font-size:0.9em; color:#ccf; }</style><script>let jogosVector = [];
+let jogoSelecionado = null;
+let firmwareArquivo = null; // Arquivo de firmware
+
+const controlesPadrao = {
+  X:"ataque_leve", Y:"ataque_pesado", A:"pular", B:"esquivar",
+  L1:"defender", R1:"habilidade", L2:"magia", R2:"especial",
+  start:"menu", select:"mapa", analogico:"movimento", turbo:"ativar"
+};
+
+function verificarFirmware(){
+  document.getElementById("status").innerHTML = firmwareArquivo 
+    ? `✅ Firmware carregado: ${firmwareArquivo.name}` 
+    : "⚠️ Firmware não adicionado!";
+}
+
+// Adicionar Firmware
+function adicionarFirmware(event){
+  firmwareArquivo = event.target.files[0];
+  verificarFirmware();
+  alert(`✅ Firmware ${firmwareArquivo.name} adicionado!`);
+}
+
+// Adicionar ROM (God of War 3)
+function adicionarROM(event){
+  if(!firmwareArquivo){
+    alert("⚠️ Adicione o Firmware antes de adicionar o ROM!");
+    return;
+  }
+  const arquivo = event.target.files[0];
+  jogosVector = []; // Só God of War 3 por enquanto
+  jogosVector.push({
+    nome: arquivo.name,
+    wid: "ROM-0",
+    fps:60,
+    modo:"suave",
+    resolucao:"2x",
+    shader:true,
+    controles:Object.assign({},controlesPadrao),
+    firmware:true,
+    arquivoROM: arquivo,
+    status:"pronto",
+    logo:"https://upload.wikimedia.org/wikipedia/en/e/e4/God_of_War_III.jpg"
+  });
+  carregarJogos();
+}
+
+// Carregar jogos
+function carregarJogos(){
+  let lista = document.getElementById("gameList");
+  lista.innerHTML = "";
+  jogosVector.forEach((jogo,index)=>{
+    let div = document.createElement("div");
+    div.className = "game";
+    div.innerHTML = `
+      <h2>${jogo.nome}</h2>
+      <img src="${jogo.logo}" class="logo">
+      <p>WID: ${jogo.wid}</p>
+      <p>FPS: ${jogo.fps}</p>
+      <p>Modo: ${jogo.modo} | Resolução: ${jogo.resolucao} | Shader: ${jogo.shader ? "Ligado":"Desligado"}</p>
+      <div class="controls">Controles: ${Object.keys(jogo.controles).join(", ")}</div>
+      <p>Status: ${jogo.status}</p>
+      <button onclick="selecionarJogo(${index})">Selecionar</button>
+      <button onclick="iniciarJogo(${index})">Jogar</button>
+    `;
+    lista.appendChild(div);
+  });
+}
+
+function selecionarJogo(index){
+  jogoSelecionado = index;
+  alert(`🎮 Jogo selecionado: ${jogosVector[index].nome}`);
+}
+
+function aplicarConfigSelecionado(){
+  if(jogoSelecionado===null){ alert("⚠️ Selecione um jogo primeiro!"); return; }
+  let vel = document.getElementById("velocidade").value;
+  let res = document.getElementById("resolucao").value;
+  let shader = document.getElementById("shader").value === "on";
+  jogosVector[jogoSelecionado].modo = vel;
+  jogosVector[jogoSelecionado].resolucao = res;
+  jogosVector[jogoSelecionado].shader = shader;
+  alert(`✅ Configurações aplicadas para ${jogosVector[jogoSelecionado].nome}`);
+  carregarJogos();
+}
+
+// Iniciar jogo (só funciona se Firmware + ROM estiverem)
+function iniciarJogo(index){
+  const jogo = jogosVector[index];
+  if(!firmwareArquivo || !jogo.arquivoROM){
+    alert("⚠️ Firmware ou ROM não encontrados! Adicione antes de iniciar.");
+    return;
+  }
+  alert(`🚀 Iniciando ${jogo.nome}\nComandos: ${Object.entries(jogo.controles).map(([b,a])=>b+"="+a).join(", ")}\nModo: ${jogo.modo} | Resolução: ${jogo.resolucao}`);
+}
+
+// Inicialização
+verificarFirmware();</script>

@@ -1,0 +1,8 @@
+PlayStation3J-Site/
+├── index.html       ← página principal
+├── style.css        ← estilos do site
+├── script.js        ← comandos do site (download, chat, etc.)
+├── downloads/
+│   └── PlayStation3J.apk   ← APK do emulador
+├── imagens/
+│   └── godofwar3.png        ← capa do jogo
